@@ -1,0 +1,16 @@
+<?php
+
+require_once 'all_prolog.php';
+
+$analysis = \::getList(
+    [
+        'filter' => ['=TYPE_DATA.ID' => null],
+        'select' => ['ID'],
+    ]
+);
+
+while ($detail = $analysis->fetch()) {
+    \::delete($detail['ID']);
+}
+
+require_once 'all_epilog.php';
