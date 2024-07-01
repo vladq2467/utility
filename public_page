@@ -1,0 +1,61 @@
+<?php
+require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
+$APPLICATION->SetTitle("Заявки");
+
+global $USER;
+
+Bitrix\Main\UI\Extension::load(
+    [
+        'ui.buttons',
+        'ui.dialogs.messagebox',
+    ]
+);
+
+if (!$USER->IsAuthorized() and !$USER->isAdmin()) {
+    \LocalRedirect('/');
+}
+?>
+    <h1>Великая чистка детальных взносов</h1>
+    <div>
+        <h2>Анализ</h2><br>
+        <?php
+        $analysis = \Snt\Fee\DetailsTable::getList(
+            [
+                'filter' => ['=TYPE_DATA.ID' => null],
+                'select' => ['SNT' => 'SECTOR_DATA.SNT_ID'],
+            ]
+        );
+        $counter = 0;
+        $result = [];
+        while ($detail = $analysis->fetch()) {
+            $counter++;
+            $result[$detail['SNT']]['COUNT'] += 1;
+        }
+
+        \Helper::vardump($result);
+        echo 'Всего: '.$counter;
+        ?>
+    </div>
+    <ul>
+        <li><a href="javascript:void(0);" onclick="delEmptyDetailFees()">Чистка детальных взносов</a></li>
+        <li>------------------------------------------</li>
+    </ul>
+    <script>
+        function delEmptyDetailFees() {
+            new BX.UI.Dialogs.MessageBox(
+                {
+                    title: 'Удаление битых детальных взносов',
+                    message: 'Эта функция удаляет все детальные взносы без главного взноса и переместит все оплаты на аванс',
+                    buttons: BX.UI.Dialogs.MessageBoxButtons.OK_CANCEL,
+                    modal: true,
+                    onOk: function (modal) {
+                        modal.close();
+                        BX.ajax.post(
+                            '/local/ajax/admin/del_empty_detail_fees.php',
+                        );
+                    },
+                },
+            ).show();
+        }
+    </script>
+<?php
