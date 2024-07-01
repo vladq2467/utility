@@ -1,0 +1,7 @@
+<?php
+
+include($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/main/include/prolog_before.php');
+
+
+chdir($_SERVER['DOCUMENT_ROOT'].'/local/cron/');
+echo exec('php -f del_empty_detail_fees.php > /dev/null &');
